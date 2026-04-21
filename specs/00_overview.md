@@ -40,7 +40,7 @@ Följande ingår inte i systemet i nuvarande version:
 ## Dokumentöversikt
 - 01_domain_language.md – Definition av centrala begrepp och terminologi som används konsekvent i hela systemet, inklusive av AI.
 - 02_user_personas.md – Beskrivning av användarroller, mål och behov som systemet ska stödja.
-- 03_functional_requirements.md – Funktionella krav som beskriver vad systemet ska göra, oberoend.
+- 03_functional_requirements.md – Funktionella krav som beskriver vad systemet ska göra, oberoende av teknisk implementation.
 - 04_ai_behavior_spec.md – Specifikation för hur AI‑komponenter ska resonera, prioritera, formulera sammanfattningar och hantera osäkerhet.
 - 05_non_functional_requirements.md – Icke‑funktionella krav såsom prestanda, säkerhet, tillgänglighet och kvalitetsaspekter.
 - 06_user_flows – Beskrivning av centrala användarflöden och typiska scenarier som visar hur användare interagerar med systemet steg för steg, från start till mål.
