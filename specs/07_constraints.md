@@ -85,6 +85,45 @@ Ett `.env.example` med tomma värden ska committas som referens för nya utveckl
 
 ---
 
+## GDPR och juridiska krav
+
+Systemet bearbetar personuppgifter i form av röster, namn och diskussioner från möten.
+Följande krav gäller innan systemet får användas i produktion med riktiga användare.
+
+### Data Processor Agreements (DPA)
+Tecknade DPA:s krävs med samtliga underleverantörer som bearbetar personuppgifter:
+- **Supabase** — lagrar mötesfiler och transkript
+- **Anthropic (Claude)** — bearbetar transkriptinnehåll
+- **OpenAI (Whisper)** — bearbetar ljud-/videofiler
+
+Utan DPA är behandlingen av personuppgifter inte laglig enligt GDPR.
+
+### AI-träningsförbud
+Varken Anthropic eller OpenAI får använda mötesdata för modellträning.
+Detta ska verifieras i respektive API-avtal och aktivt opt-outas om det krävs.
+Kravet gäller oavsett om data är anonymiserad eller ej.
+
+### Dataresidency
+Supabase ska konfigureras med EU-region (t.ex. `eu-west-1`) för att säkerställa
+att personuppgifter inte lämnar EU utan Standard Contractual Clauses (SCC).
+Notera att Railway och Vercel primärt är US-baserade — backend-bearbetning
+sker utanför EU vilket kräver att SCC är på plats med dessa leverantörer.
+
+### Datalagring och retention
+Möten, transkript och sammanfattningar ska inte sparas längre än nödvändigt.
+En retention-policy ska definieras innan produktionslänsering — rekommendation är
+att användaren själv styr livslängden via radering (FR-19).
+Automatisk radering efter inaktivitet är en v2-funktion.
+
+### Tredjepartskonsent
+Mötesdeltagare vars röster bearbetas av systemet är registrerade i systemet
+som personuppgiftssubjekt även om de inte själva är användare.
+Det åligger den användare som laddar upp mötesfilen att säkerställa att
+inspelning och AI-bearbetning är kommunicerad till samtliga deltagare.
+Systemet ska visa en tydlig informationstext om detta vid uppladdning.
+
+---
+
 ## Förbud
 
 - Ingen lokal filbearbetning på klienten — all AI-bearbetning sker server-side.
