@@ -20,8 +20,11 @@ till självhostat Postgres utan kodändringar. SQLite utesluts eftersom det inte
 är lämpligt för flertrådad access eller produktionssättning.
 
 ### Transkription
-**Val: OpenAI Whisper**
+**Val: OpenAI Whisper, modell `medium`**
 Stöder svenska och engelska med hög noggrannhet.
+Modell `medium` används i v1 — bra balans mellan precision och kostnad/tid.
+`large` ger marginellt bättre precision men är betydligt långsammare och dyrare.
+`small` eller mindre utesluts på grund av otillräcklig precision för svenska.
 Kan köras lokalt eller via API beroende på kostnadsprioritet.
 Outputformat är tidsstämplat JSON vilket matchar systemets transkriptmodell.
 
@@ -124,6 +127,24 @@ Systemet ska visa en tydlig informationstext om detta vid uppladdning.
 
 ---
 
+## CORS
+
+Backend ska tillåta cross-origin requests från frontend-origin.
+CORS ska konfigureras explicit i FastAPI — utan det blockerar webbläsaren alla API-anrop.
+
+```python
+# Tillåtna origins per miljö
+Lokal dev:   http://localhost:5173
+Preview:     https://*.vercel.app
+Produktion:  https://<produktionsdomän>
+```
+
+Tillåtna metoder: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`.
+Tillåtna headers: `Authorization`, `Content-Type`.
+Wildcard origin (`*`) är inte tillåtet i produktion.
+
+---
+
 ## Förbud
 
 - Ingen lokal filbearbetning på klienten — all AI-bearbetning sker server-side.
@@ -131,3 +152,4 @@ Systemet ska visa en tydlig informationstext om detta vid uppladdning.
 - Ingen chunking-logik för sammanfattning i v1 — hela transkriptet skickas i en request.
 - SQLite är inte tillåtet, inte ens för lokal utveckling mot delad databas.
 - Ingen realtidsbearbetning (streaming av transkript) i v1.
+- CORS wildcard (`*`) är inte tillåtet i produktion.

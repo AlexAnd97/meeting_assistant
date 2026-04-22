@@ -109,11 +109,15 @@ Hanteras av Supabase Auth. Ingen separat tabell behövs i v1.
 | POST | `/meetings` | Ladda upp mötesfil, skapar Meeting med status `uploaded` |
 | GET | `/meetings` | Lista alla möten för inloggad användare |
 | GET | `/meetings/{id}` | Hämta möte med status |
+| PATCH | `/meetings/{id}` | Uppdatera mötestitel |
+| DELETE | `/meetings/{id}` | Radera möte, transkript, sammanfattning och fil |
 | GET | `/meetings/{id}/transcript` | Hämta transkript |
 | GET | `/meetings/{id}/summary` | Hämta sammanfattning |
-| DELETE | `/meetings/{id}` | Radera möte, transkript, sammanfattning och fil |
+| GET | `/account/export` | Exportera all användardata som JSON |
+| DELETE | `/account` | Radera konto och all tillhörande data |
+| GET | `/health` | Health check — returnerar `{ "status": "ok" }` utan autentisering |
 
-Alla endpoints kräver autentisering via Supabase JWT i `Authorization`-headern.
+Alla endpoints utom `/health` kräver autentisering via Supabase JWT i `Authorization`-headern.
 Frontend pollar `GET /meetings/{id}` var 5:e sekund tills status är `done` eller `error`.
 
 ---
