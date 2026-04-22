@@ -42,6 +42,49 @@ som täcker en PoC utan initiala infrastrukturkostnader.
 
 ---
 
+## Miljöer
+
+Systemet har tre miljöer: lokal utveckling, preview och produktion.
+Staging som separat miljö behövs inte — Vercel skapar automatiskt en preview-deployment
+per PR som fyller samma syfte.
+
+### Lokal utveckling
+- Konfiguration via `.env.local` i både frontend och backend
+- Separat Supabase-projekt dedikerat för dev — delar aldrig databas med produktion
+- Whisper körs lokalt för att undvika API-kostnader under utveckling
+- Backend startas med `uvicorn` lokalt, frontend med `npm run dev`
+
+### Preview (per PR)
+- Vercel skapar automatiskt en publik preview-URL vid varje pull request
+- Pekar mot dev-Supabase-projektet, inte produktion
+- Används för granskning och manuell testning innan merge
+
+### Produktion
+- Frontend deployad via Vercel (main-branch triggar automatisk deploy)
+- Backend deployad via Railway (main-branch triggar automatisk deploy)
+- Eget Supabase-projekt med produktionsdata — åtskilt från dev
+
+### Miljövariabler
+Följande variabler ska finnas i respektive `.env`-fil och får aldrig committas:
+
+```
+# Backend
+SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=          # för Whisper API (om ej lokalt)
+
+# Frontend
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_API_BASE_URL=
+```
+
+`.env`-filer ska alltid ligga i `.gitignore`.
+Ett `.env.example` med tomma värden ska committas som referens för nya utvecklare.
+
+---
+
 ## Förbud
 
 - Ingen lokal filbearbetning på klienten — all AI-bearbetning sker server-side.
