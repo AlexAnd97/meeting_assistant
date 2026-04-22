@@ -94,3 +94,16 @@ Gränssnittet ska fungera på skärmar från 375px (mobil) till 1440px (desktop)
 #### NFR-18: Bakgrundsbearbetning
 Bearbetningspipelinen (transkription + sammanfattning) ska köras som bakgrundsuppgift
 och inte blockera API-responsen. FastAPI `BackgroundTasks` används i v1.
+
+---
+
+### GDPR — Tekniska krav
+
+#### NFR-19: Kontoradering är fullständig
+`DELETE /account` ska ta bort all användardata i en transaktion.
+Om något steg misslyckas ska hela operationen rullas tillbaka — ingen partiell radering.
+Ordning: mötesfiler i Storage → summaries → transcripts → meetings → auth.users.
+
+#### NFR-20: Dataexport inom rimlig tid
+`GET /account/export` ska generera och returnera exportfilen inom 30 sekunder
+oavsett antal möten. Endpoint kräver giltig session.

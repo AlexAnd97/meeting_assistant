@@ -128,3 +128,28 @@ Användaren ska bekräfta radering i ett dialogfönster innan det verkställs.
 #### FR-20: Användare ser bara egna möten
 En inloggad användare ska endast ha åtkomst till möten kopplade till sitt eget `user_id`.
 Detta ska enforças på backend — inte enbart i frontend.
+
+---
+
+### GDPR — Registrerades rättigheter
+
+#### FR-21: Exportera all min data (artikel 15 & 20)
+Användaren ska kunna exportera all sin data i maskinläsbart format (JSON).
+Exporten ska inkludera:
+- Alla möten (metadata, status, titel, datum)
+- Alla transkript (full_text och segments)
+- Alla sammanfattningar (overview, decisions, action_items, risks, uncertainties)
+
+Exporten triggas via `GET /account/export` och returnerar en JSON-fil för nedladdning.
+Mötesfiler (ljud/video) ingår inte i exporten — dessa kan laddas ned separat.
+
+#### FR-22: Radera mitt konto och all data (artikel 17)
+Användaren ska kunna radera sitt konto och all tillhörande data permanent.
+Radering ska ta bort:
+- Alla möten, transkript och sammanfattningar i databasen
+- Alla mötesfiler i Supabase Storage
+- Användarkontot i Supabase Auth
+
+Användaren ska bekräfta i ett dialogfönster med texten "Radera mitt konto".
+Radering är irreversibel och ska kommuniceras tydligt innan bekräftelse.
+Endpoint: `DELETE /account`.
