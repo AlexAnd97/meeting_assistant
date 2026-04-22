@@ -133,3 +133,122 @@ Kriterierna är skrivna för att kunna verifieras utan manuell tolkning.
 - Efter bekräftelse är användaren utloggad och kan inte längre logga in med samma e-post
 - Databasen innehåller inga rader med användarens `user_id`
 - Inga filer finns kvar i Storage kopplade till användaren
+
+---
+
+## Negativa scenarion och edge cases
+
+### Autentisering
+
+#### NEG-01: Utgången magic link
+- Klick på en magic link som är äldre än 1 timme visar ett felmeddelande
+- Ingen session skapas
+- Användaren erbjuds att begära en ny länk
+
+#### NEG-02: Redan använd magic link
+- Klick på en magic link som redan använts visar ett felmeddelande
+- Ingen ny session skapas
+
+#### NEG-03: Förfallen JWT
+- API-anrop med en JWT vars giltighetstid löpt ut returnerar HTTP 401
+- Backend returnerar aldrig HTTP 500 för en förfallen token
+
+#### NEG-04: Manipulerad JWT
+- API-anrop med en JWT med ogiltig signatur returnerar HTTP 401
+
+---
+
+### Uppladdning
+
+#### NEG-05: Korrupt fil med giltig filändelse
+- En fil med ändelsen `.mp3` men ogiltigt innehåll (felaktiga magic bytes) avvisas av backend med HTTP 422
+- Felmeddelande visas för användaren
+
+#### NEG-06: Tom fil
+- En fil med 0 bytes avvisas med felmeddelande innan uppladdning startar
+
+#### NEG-07: Nätverksavbrott under uppladdning
+- Om anslutningen bryts under uppladdning visas ett felmeddelande
+- Inget möte skapas i databasen vid ett avbrutet uppladdningsförsök
+
+#### NEG-08: Fil exakt vid gränsen
+- En fil på exakt 500 MB ska accepteras
+- En fil på 500 MB + 1 byte ska avvisas
+
+---
+
+### Bearbetning
+
+#### NEG-09: Tyst inspelning utan tal
+- En fil som endast innehåller tystnad eller bakgrundsljud resulterar i ett tomt transkript
+- Mötet sätts till status `error` med meddelandet "Inget tal kunde identifieras i filen"
+
+#### NEG-10: Whisper timeout
+- Om transkriptionen tar längre än förväntat och timeout nås sätts status till `error`
+- Felmeddelandet anger att transkriptionen misslyckades
+
+#### NEG-11: Claude API otillgängligt
+- Om Claude inte svarar inom rimlig tid sätts status till `error`
+- Felmeddelandet anger att sammanfattningen misslyckades, inte att hela bearbetningen är trasig
+- Transkriptet ska vara sparat i databasen även om sammanfattningen misslyckas
+
+#### NEG-12: Radera möte under pågående bearbetning
+- Om användaren raderar ett möte med status `transcribing` eller `summarizing`
+  avbryts bearbetningen och all data tas bort
+- Inga bakgrundsprocesser fortsätter för ett raderat möte
+
+---
+
+### Sammanfattning
+
+#### NEG-13: Möte utan beslut
+- Om inga beslut fattades i mötet returnerar Claude en tom array för `decisions`
+- Frontend visar "Inga beslut identifierades" — inte en tom lista utan förklaring
+
+#### NEG-14: Möte utan action items
+- Om inga action items nämndes returnerar Claude en tom array för `action_items`
+- Frontend visar "Inga action items identifierades" — inte en tom lista utan förklaring
+
+#### NEG-15: Möte utan struktur (smalltalk)
+- Om mötet inte innehåller identifierbara beslut eller actions ska sammanfattningen
+  ändå genereras med en översikt
+- Claude får inte hitta på beslut eller actions som inte nämnts
+
+---
+
+### Möteshantering
+
+#### NEG-16: Redigera titel till tom sträng
+- Backend avvisar `PATCH /meetings/{id}` med tom titel med HTTP 422
+- Felmeddelande visas för användaren
+
+#### NEG-17: Sökning med specialtecken
+- Sökning med tecken som `'`, `"`, `--`, `;` ska inte orsaka databasfel
+- Parametriserade queries används — SQL-injection är inte möjlig
+
+#### NEG-18: Sökning med tom sträng
+- Tom söksträng returnerar alla möten (samma som ingen sökning)
+
+---
+
+### Säkerhet
+
+#### NEG-19: Åtkomst till annan användares möte
+- `GET /meetings/{id}` där ID:t tillhör en annan användare returnerar HTTP 404
+- HTTP 404 används (inte 403) för att inte avslöja om resursen existerar
+
+#### NEG-20: Direktåtkomst till fil i Storage
+- En publik URL till en fil i Supabase Storage returnerar HTTP 400 eller 403
+- Filer är aldrig tillgängliga utan signerad URL
+
+---
+
+### GDPR
+
+#### NEG-21: Export utan möten
+- `GET /account/export` för en användare utan möten returnerar HTTP 200
+  med en giltig JSON-fil med tomma arrayer — inte ett fel
+
+#### NEG-22: Radera konto med möte under bearbetning
+- Om användaren raderar sitt konto medan ett möte bearbetas avbryts bearbetningen
+- All data raderas fullständigt utan att lämna orphan-rader i databasen
